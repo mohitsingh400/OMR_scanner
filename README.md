@@ -1,6 +1,15 @@
 # OMR Web App
 
-A full-stack Optical Mark Recognition (OMR) scanning system built with **FastAPI** and a lightweight HTML/CSS/JS frontend. Users upload an image of an OMR sheet, the backend auto-aligns, preprocesses, detects filled bubbles via OpenCV, and returns the answers (with confidence scores) as JSON.
+A full-stack Optical Mark Recognition (OMR) scanning system built with **FastAPI** and a lightweight HTML/CSS/JS frontend. Users upload an image of an OMR sheet, the backend auto-aligns, preprocesses, detects filled bubbles via OpenCV, evaluates answers against an answer key, and returns the results with scoring as JSON.
+
+## Features
+
+- ✅ Upload OMR sheet images (PNG, JPEG)
+- ✅ Automatic image preprocessing and alignment
+- ✅ Bubble detection with confidence scores
+- ✅ Answer key evaluation and scoring
+- ✅ Detailed results with per-question feedback
+- ✅ Summary statistics (total marks, correct/wrong counts)
 
 ## Project Structure
 
@@ -12,7 +21,8 @@ omr_webapp/
 │   └── utils/
 │       ├── preprocess.py
 │       ├── detect.py
-│       └── json_output.py
+│       ├── json_output.py
+│       └── evaluation.py
 ├── frontend/
 │   ├── index.html
 │   ├── style.css
@@ -20,8 +30,7 @@ omr_webapp/
 ├── samples/
 │   └── sample_omr.jpg
 ├── requirements.txt
-├── Dockerfile
-└── docker-compose.yml
+└── README.md
 ```
 
 ## Quick Start (Local)
@@ -30,11 +39,46 @@ omr_webapp/
 cd omr_webapp
 python -m venv .venv
 .venv\Scripts\activate   # Windows
+# source .venv/bin/activate   # Linux/Mac
 pip install -r requirements.txt
-uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+cd backend
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Open the frontend by double-clicking `frontend/index.html` (or host it with any static HTTP server). Configure `frontend/app.js` to point to the deployed backend URL if different from `http://localhost:8000`.
+Or use the provided scripts:
+- Windows: `run.bat`
+- PowerShell: `run.ps1`
+
+Open the frontend by navigating to `http://localhost:8000` in your browser (the frontend is served by FastAPI).
+
+## Configuration
+
+Edit `backend/template.json` to configure:
+- Number of questions
+- Answer options (A, B, C, D, etc.)
+- Grid layout (bubble positions)
+- **Answer key** for evaluation
+
+Example `template.json`:
+```json
+{
+  "questions": 10,
+  "options": ["A", "B", "C", "D"],
+  "answer_key": {
+    "1": "B",
+    "2": "D",
+    "3": "A"
+  },
+  "grid": {
+    "start_x": 0.1,
+    "start_y": 0.2,
+    "row_gap": 0.08,
+    "col_gap": 0.15,
+    "bubble_width": 0.05,
+    "bubble_height": 0.05
+  }
+}
+```
 
 ## API
 
@@ -49,32 +93,44 @@ Open the frontend by double-clicking `frontend/index.html` (or host it with any 
   "answers": {
     "1": {"choice": "B", "confidence": 0.91},
     "2": {"choice": "A", "confidence": 0.73}
+  },
+  "evaluation": {
+    "1": {
+      "student_answer": "B",
+      "correct_answer": "B",
+      "is_correct": true,
+      "marks": 1
+    },
+    "2": {
+      "student_answer": "A",
+      "correct_answer": "D",
+      "is_correct": false,
+      "marks": 0
+    },
+    "summary": {
+      "total_questions": 2,
+      "correct": 1,
+      "wrong": 1,
+      "total_marks": 1
+    }
   }
 }
 ```
 
-On failure the response contains `status: "error"` with a message.
+`GET /health`
+
+- Returns `{"status": "ok"}`
 
 ## Deployment
-
-### Docker
-
-Build and run:
-
-```bash
-docker compose up --build
-```
-
-The backend listens on port `8000`. The frontend is served as static files by FastAPI at `/` for container deployments.
 
 ### Render.com / Railway.app
 
 1. Push this repo to GitHub.
 2. Create a new **Web Service**.
-3. Use the Docker deployment option or set:
-   - **Start Command**: `uvicorn backend.main:app --host 0.0.0.0 --port 8000`
+3. Set:
+   - **Start Command**: `cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT`
    - **Build Command**: `pip install -r requirements.txt`
-4. Set the service port to 8000.
+4. Set the service port to match the platform's assigned port.
 
 ### AWS EC2 (Ubuntu)
 
@@ -85,7 +141,8 @@ cd omr_webapp
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-uvicorn backend.main:app --host 0.0.0.0 --port 8000
+cd backend
+uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
 Use Nginx or an ALB to expose port 8000 publicly.
@@ -97,4 +154,3 @@ The backend writes logs to `backend/logs/app.log` and console. Rotate/ship as ne
 ## Sample Asset
 
 `samples/sample_omr.jpg` is a placeholder. Replace it with a real OMR sheet image to test detection.
-
