@@ -1,0 +1,27 @@
+{
+  "title": "Demo OMR Layout",
+  "description": "Uniform grid layout with 10 questions and 4 answer options.",
+  "questions": 10,
+  "options": ["A", "B", "C", "D"],
+  "answer_key": {
+    "1": "B",
+    "2": "D",
+    "3": "A",
+    "4": "C",
+    "5": "B",
+    "6": "D",
+    "7": "A",
+    "8": "C",
+    "9": "B",
+    "10": "D"
+  },
+  "grid": {
+    "start_x": 0.12,
+    "start_y": 0.18,
+    "row_gap": 0.07,
+    "col_gap": 0.09,
+    "bubble_width": 0.05,
+    "bubble_height": 0.035
+  }
+}
+

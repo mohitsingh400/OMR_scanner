@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OMR Sheet Scanner</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <main class="container">
+    <section class="header">
+      <h1>OMR Sheet Scanner</h1>
+      <p>Upload your OMR sheet image, scan, and view detected answers instantly.</p>
+    </section>
+
+    <section class="uploader">
+      <label class="upload-label" for="fileInput">Upload OMR Image</label>
+      <input type="file" id="fileInput" accept="image/png, image/jpeg" />
+      <div class="preview-wrapper">
+        <img id="previewImage" alt="Preview" />
+      </div>
+      <button id="scanBtn" disabled>Scan OMR Sheet</button>
+    </section>
+
+    <section class="results">
+      <div class="spinner hidden" id="spinner"></div>
+      <pre id="resultBox">{}</pre>
+      <p class="error hidden" id="errorBox"></p>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+
+</html>
+
